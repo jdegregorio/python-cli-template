@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_root="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+export PYTHONPYCACHEPREFIX="$project_root/.cache/pycache"
+export PYTHONDONTWRITEBYTECODE=1
+python3 -m compileall -q "$project_root/src" "$project_root/tests"

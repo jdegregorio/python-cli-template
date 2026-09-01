@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+overlay_root="$repo_root/template"
+
+required=(
+  README.md
+  pyproject.toml
+  scripts/project/check
+  scripts/project/dev
+  scripts/project/test
+  src/__PROJECT_MODULE__/__init__.py
+  src/__PROJECT_MODULE__/__main__.py
+  src/__PROJECT_MODULE__/cli.py
+  tests/test_cli.py
+)
+
+for relative_file in "${required[@]}"; do
+  test -f "$overlay_root/$relative_file"
+done
+
+bash -n "$overlay_root/scripts/project/check"
+bash -n "$overlay_root/scripts/project/dev"
+bash -n "$overlay_root/scripts/project/test"
+
+python3 - "$overlay_root" <<'PY'
+from __future__ import annotations
+
+import ast
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+tokens = {
+    "{{PROJECT_NAME}}": "sample-project",
+    "{{PROJECT_MODULE}}": "sample_project",
+    "__PROJECT_MODULE__": "sample_project",
+}
+
+for source in sorted(root.rglob("*.py")):
+    rendered = source.read_text(encoding="utf-8")
+    for token, replacement in tokens.items():
+        rendered = rendered.replace(token, replacement)
+    ast.parse(rendered, filename=str(source))
+
+project = (root / "pyproject.toml").read_text(encoding="utf-8")
+for expected in ("{{PROJECT_NAME}}", "{{PROJECT_MODULE}}"):
+    if expected not in project:
+        raise SystemExit(f"missing expected template token: {expected}")
+PY
