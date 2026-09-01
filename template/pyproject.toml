@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "{{PROJECT_NAME}}"
+version = "0.1.0"
+description = "Agent-ready Python command-line application"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+"{{PROJECT_NAME}}" = "{{PROJECT_MODULE}}.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/{{PROJECT_MODULE}}"]

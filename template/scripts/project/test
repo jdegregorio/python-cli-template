@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_root="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+export PYTHONPATH="$project_root/src${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPYCACHEPREFIX="$project_root/.cache/pycache"
+export PYTHONDONTWRITEBYTECODE=1
+exec python3 -m unittest discover -s "$project_root/tests" -v
